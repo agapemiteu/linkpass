@@ -1,13 +1,4 @@
 # One replica only: the app keeps its records in a single SQLite file on this volume.
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: linkpass-data
-spec:
-  accessModes: [ReadWriteOnce]
-  resources:
-    requests: { storage: 1Gi }
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,7 +13,6 @@ spec:
       labels: { app: app }
     spec:
       securityContext: { fsGroup: 1000 }
-      imagePullSecrets: [{ name: regcred }]
       containers:
         - name: app
           image: ghcr.io/agapemiteu/linkpass:IMAGE_TAG
@@ -47,7 +37,10 @@ spec:
             limits: { cpu: 500m, memory: 512Mi }
       volumes:
         - name: data
-          persistentVolumeClaim: { claimName: linkpass-data }
+          # TEMPORARY: the platform cannot provision volumes yet (Linode billing error). Data survives
+          # container restarts but not pod rescheduling. Switch back once k8s/pvc.yaml binds:
+          # persistentVolumeClaim: { claimName: linkpass-data }
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
