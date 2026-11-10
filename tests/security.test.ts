@@ -11,7 +11,7 @@ describe("webhook signature", () => {
   const sig = "sha256=" + createHmac("sha256", secret).update(`${ts}.${body}`).digest("hex");
 
   it("accepts a valid signature", () => expect(verifySignature(body, ts, sig, secret)).toBe(true));
-  it("rejects a forged signature", () => expect(verifySignature(body, ts, sig.replace(/.$/, "0"), secret)).toBe(false));
+  it("rejects a forged signature", () => expect(verifySignature(body, ts, sig.slice(0, -1) + (sig.endsWith("0") ? "1" : "0"), secret)).toBe(false));
   it("rejects a modified body", () => expect(verifySignature(body + " ", ts, sig, secret)).toBe(false));
   it("rejects stale timestamps", () => expect(verifySignature(body, ts, sig, secret, Date.now() + 10 * 60_000)).toBe(false));
 });
