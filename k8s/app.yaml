@@ -1,0 +1,60 @@
+# One replica only: the app keeps its records in a single SQLite file on this volume.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: linkpass-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests: { storage: 1Gi }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: app }
+  template:
+    metadata:
+      labels: { app: app }
+    spec:
+      securityContext: { fsGroup: 1000 }
+      imagePullSecrets: [{ name: regcred }]
+      containers:
+        - name: app
+          image: ghcr.io/agapemiteu/linkpass:IMAGE_TAG
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef: { name: huawei-gateway, optional: true }
+          env:
+            - { name: BANK_PROVIDER, value: forge }
+            - { name: APP_BASE_URL, value: "https://team06.xtradot.co" }
+            - { name: TEAM_ID, value: team06 }
+            - { name: DEMO_MODE, value: "true" }
+            - { name: HUAWEI_TEXT_MODEL, value: glm-5.2 }
+            - { name: HUAWEI_VISION_MODEL, value: deepseek-v4.1-flash-1017 }
+          volumeMounts:
+            - { name: data, mountPath: /data }
+          readinessProbe:
+            httpGet: { path: /healthz, port: 8080 }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: 500m, memory: 512Mi }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: linkpass-data }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+spec:
+  selector: { app: app }
+  ports:
+    - port: 80
+      targetPort: 8080
