@@ -1,39 +1,53 @@
 @import "tailwindcss";
 
+/* Black, white and one blue. Red is kept only for safety blocks. */
 @theme inline {
-  --color-paper: #f5f5f7;
+  --color-paper: #f4f6fa;
   --color-card: #ffffff;
-  --color-fill: #ececf0;
-  --color-ink: #1d1d1f;
-  --color-muted: #6e6e73;
-  --color-line: #e3e3e8;
-  --color-go: #1a7f4b;
-  --color-go-soft: #e4f4ea;
-  --color-ask: #a35200;
-  --color-ask-soft: #fdf0de;
-  --color-stop: #c4161c;
-  --color-stop-soft: #fde8e8;
+  --color-fill: #eef1f6;
+  --color-ink: #0a0b0d;
+  --color-muted: #5f6672;
+  --color-line: #e2e6ee;
+  --color-blue: #1f5eff;
+  --color-blue-deep: #1243c9;
+  --color-blue-soft: #e8efff;
+  --color-go: #1f5eff;
+  --color-go-soft: #e8efff;
+  --color-ask: #0a0b0d;
+  --color-ask-soft: #eef1f6;
+  --color-stop: #d0242b;
+  --color-stop-soft: #fdecec;
+  /* Playful accents, used on the child's side only. */
+  --color-sun: #ffc93c;
+  --color-coral: #ff6b57;
+  --color-mint: #2fd09a;
+  --color-lilac: #8b7cff;
   --font-sans: var(--font-sans-face);
 }
 
 body {
   background: var(--color-paper);
   color: var(--color-ink);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.011em;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
 }
 
-@keyframes rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
+/* Light sweep used while the AI reads a post. */
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
 }
-.rise {
-  animation: rise 0.35s ease-out both;
+.scan::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, rgba(31, 94, 255, 0.35), transparent);
+  animation: scan 1.6s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise { animation: none; }
+  .scan::after { animation: none; }
 }

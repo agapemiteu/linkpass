@@ -23,7 +23,7 @@ export default async function ParentRequest({ params }: { params: Promise<{ id: 
   const open = ["RESERVED", "PAYMENT_PENDING", "PAYMENT_READY"].includes(p.status);
 
   return (
-    <main>
+    <main className="mx-auto max-w-md px-4 pb-16">
       <TopBar name={user.displayName} role="parent" />
       <StatusPoller purchaseId={p.id} active={open} />
 
@@ -51,9 +51,9 @@ export default async function ParentRequest({ params }: { params: Promise<{ id: 
       </Card>
 
       {failing.length > 0 && p.status === "APPROVAL_REQUIRED" && (
-        <Card className="mt-4 bg-ask-soft">
-          <p className="flex items-center gap-2 font-semibold text-ask"><Icon icon={Alert02Icon} /> Why this needs you</p>
-          <ul className="mt-2 space-y-1 pl-8 text-[15px]">
+        <Card className="mt-4 bg-ink text-white">
+          <p className="flex items-center gap-2 font-semibold"><Icon icon={Alert02Icon} className="text-blue" /> Why this needs you</p>
+          <ul className="mt-2 space-y-1 pl-8 text-[15px] text-white/80">
             {failing.map((c) => <li key={c}>{REASON_TEXT[c]}</li>)}
           </ul>
         </Card>

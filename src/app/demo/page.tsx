@@ -19,7 +19,7 @@ export default async function Demo() {
   const next = setting("next_transfer_outcome");
 
   return (
-    <main>
+    <main className="mx-auto max-w-md px-4 pb-16">
       <TopBar name={user.displayName} role="parent" />
       <Link href="/parent" className="mb-4 inline-flex items-center gap-1 text-[15px] font-medium text-muted hover:text-ink">
         <Icon icon={ArrowLeft01Icon} size={18} /> Home

@@ -11,7 +11,7 @@ export const buttonVariants = cva(
         secondary: "bg-fill text-ink hover:bg-line",
         outline: "border border-line bg-card text-ink hover:border-ink/40",
         danger: "bg-stop-soft text-stop hover:bg-stop/15",
-        go: "bg-go text-white hover:bg-go/90",
+        go: "bg-blue text-white hover:bg-blue-deep",
       },
     },
     defaultVariants: { variant: "primary" },

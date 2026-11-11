@@ -16,7 +16,7 @@ export default async function Permissions() {
   const daysLeft = policy ? Math.max(1, Math.ceil((new Date(policy.expiresAt).getTime() - Date.now()) / 86400_000)) : 30;
 
   return (
-    <main>
+    <main className="mx-auto max-w-md px-4 pb-16">
       <TopBar name={user.displayName} role="parent" />
       <Link href="/parent" className="mb-4 inline-flex items-center gap-1 text-[15px] font-medium text-muted hover:text-ink">
         <Icon icon={ArrowLeft01Icon} size={18} /> Home

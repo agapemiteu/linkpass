@@ -1,16 +1,17 @@
-import { createAvatar } from "@dicebear/core";
-import { notionists } from "@dicebear/collection";
 import { cn } from "@/lib/utils";
 
-// Generated in-process; no request to DiceBear's servers.
-const cache = new Map<string, string>();
+// Demo identities use licensed Pexels photos (see README credits).
+const PHOTOS: Record<string, string> = { Mira: "/images/mira.jpg", Adaeze: "/images/adaeze.jpg" };
 
 export function Avatar({ seed, size = 40, className }: { seed: string; size?: number; className?: string }) {
-  let uri = cache.get(seed);
-  if (!uri) {
-    uri = createAvatar(notionists, { seed, backgroundColor: ["f1e7da", "dfe8f2", "e6efe0"] }).toDataUri();
-    cache.set(seed, uri);
+  const src = PHOTOS[seed];
+  if (!src) {
+    return (
+      <span style={{ width: size, height: size }} className={cn("grid shrink-0 place-items-center rounded-full bg-ink text-sm font-semibold text-white", className)}>
+        {seed[0]}
+      </span>
+    );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={uri} alt="" width={size} height={size} className={cn("shrink-0 rounded-full", className)} />;
+  return <img src={src} alt="" width={size} height={size} style={{ width: size, height: size }} className={cn("shrink-0 rounded-full object-cover object-top", className)} />;
 }

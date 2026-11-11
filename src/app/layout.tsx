@@ -9,14 +9,12 @@ export const metadata: Metadata = {
   description: "Let your children shop independently, on your terms.",
 };
 
-export const viewport: Viewport = { themeColor: "#f5f5f7", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#f4f6fa", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${sans.variable} font-sans antialiased`}>
-        <div className="mx-auto min-h-dvh max-w-md px-4 pb-16">{children}</div>
-      </body>
+      <body className={`${sans.variable} min-h-dvh font-sans antialiased`}>{children}</body>
     </html>
   );
 }

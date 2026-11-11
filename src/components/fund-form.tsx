@@ -14,7 +14,7 @@ export function FundForm() {
     );
   }
   return (
-    <div className="rise mt-4">
+    <div className="mt-4">
       <div className="flex gap-2">
         <label className="flex h-12 flex-1 items-center rounded-full bg-paper px-4">
           <span className="text-muted">₦</span>

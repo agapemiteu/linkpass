@@ -7,42 +7,50 @@ import type { ReasonCode } from "@/lib/policies/evaluator";
 import { ngn, purchaseFor, STATUS_LABEL, TONE } from "@/lib/views";
 import { ActionButton } from "@/components/action-button";
 import { StatusPoller } from "@/components/status-poller";
-import { Icon, Reasons, Steps, TopBar } from "@/components/ui";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardLabel } from "@/components/ui/card";
+import { Icon, Reasons, TopBar } from "@/components/ui";
+import { JourneyPath } from "@/components/journey-path";
+import { Confetti } from "@/components/confetti";
+import { FadeUp } from "@/components/motion";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 function headline(status: string, price: string, codes: ReasonCode[]) {
   switch (status) {
     case "AUTO_APPROVED":
-      return "You're good to go. It's within your allowance and from a seller your parent approved.";
+      return "You're good to go! It fits your allowance and comes from a seller your parent trusts.";
     case "NEEDS_PARENT_APPROVAL":
-      return codes.includes("ABOVE_SINGLE_LIMIT")
-        ? `This costs ${price}, above your automatic limit. Ask your parent to approve it.`
-        : "This one needs your parent's OK first.";
+      return codes.includes("ABOVE_SINGLE_LIMIT") ? `This one is ${price}, a bit above your limit. Ask your parent?` : "This one needs your parent's OK first.";
     case "BLOCKED":
-      return "LinkPass won't pay this seller. They aren't verified, so there's no way to be sure where the money goes.";
+      return "Hold on. This seller isn't verified, so LinkPass won't send them money.";
     case "APPROVAL_REQUIRED":
-      return "Sent to your parent. This page updates when they decide.";
+      return "Sent to your parent. We'll update this as soon as they decide.";
     case "DECLINED":
       return "Your parent said no to this one.";
     case "APPROVED":
     case "PAYMENT_READY":
-      return "Your parent approved it and is completing the payment.";
+      return "Your parent said yes and is paying now.";
     case "RESERVED":
     case "PAYMENT_PENDING":
-      return "The bank is processing the payment. Your money is held until it confirms.";
+      return "The bank is processing it. Your money is safely held.";
     case "PAID":
-      return "Done. The bank confirmed the payment and the seller has been paid.";
+      return "It's yours! The bank confirmed the payment.";
     case "FAILED":
-      return "The payment didn't go through. Nothing was taken from your allowance.";
+      return "That payment didn't go through. Nothing was taken.";
     case "REVERSED":
-      return "The bank reversed this payment and the money is back in your allowance.";
+      return "The bank reversed this payment. Your money is back.";
     default:
       return "";
   }
 }
+
+// Background glow per outcome, so each moment has its own mood.
+const GLOW = {
+  go: "from-blue/30 via-lilac/25 to-mint/30",
+  ask: "from-sun/40 via-coral/20 to-lilac/25",
+  stop: "from-coral/35 via-stop/15 to-sun/20",
+  neutral: "from-lilac/25 via-blue/15 to-mint/20",
+};
 
 export default async function ChildPurchase({ params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser();
@@ -52,45 +60,57 @@ export default async function ChildPurchase({ params }: { params: Promise<{ id: 
   const codes = JSON.parse(p.reason_codes) as ReasonCode[];
   const open = ["RESERVED", "PAYMENT_PENDING", "APPROVAL_REQUIRED", "APPROVED", "PAYMENT_READY"].includes(p.status);
   const tone = TONE[p.status];
+  const justPaid = p.status === "PAID" && Date.now() - new Date(p.updated_at).getTime() < 60_000;
+  const steps = journey(p, "child");
 
   return (
-    <main>
+    <main className="relative mx-auto max-w-md overflow-hidden px-4 pb-16">
+      <div aria-hidden className={cn("pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px] bg-gradient-to-br blur-2xl", GLOW[tone])} />
+      {justPaid && <Confetti />}
       <TopBar name={user.displayName} role="child" />
       <StatusPoller purchaseId={p.id} active={open} />
 
-      <Link href="/child" className="mb-4 inline-flex items-center gap-1 text-[15px] font-medium text-muted hover:text-ink">
+      <Link href="/child" className="inline-flex items-center gap-1 text-[15px] font-medium text-muted hover:text-ink">
         <Icon icon={ArrowLeft01Icon} size={18} /> Shopping
       </Link>
 
-      <Card className="flex items-center gap-4">
+      <FadeUp className="mt-4 flex flex-col items-center text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={p.image_url} alt="" className="size-20 rounded-2xl object-cover" />
-        <div className="min-w-0">
-          <p className="truncate text-[17px] font-semibold">{p.title}</p>
-          <p className="text-sm text-muted">{p.merchant}</p>
-          <p className="tabular mt-1 text-[22px] font-semibold">{ngn(p.price_kobo)}</p>
-        </div>
-      </Card>
+        <img src={p.image_url} alt={p.title} className="size-44 rotate-[-4deg] rounded-[32px] object-cover shadow-2xl ring-8 ring-white" />
+        <p className="mt-6 text-[13px] font-semibold tracking-wide text-muted uppercase">{p.merchant}</p>
+        <p className="text-[22px] font-semibold tracking-tight">{p.title}</p>
+        <p className="tabular text-[17px] font-semibold text-blue">{ngn(p.price_kobo)}</p>
+      </FadeUp>
 
-      <Card className={`rise mt-4 ${tone === "go" ? "bg-go-soft" : tone === "stop" ? "bg-stop-soft" : tone === "ask" ? "bg-ask-soft" : ""}`}>
-        <Badge tone={tone} className="bg-white/70">{STATUS_LABEL[p.status]}</Badge>
-        <p className="mt-3 text-[19px] leading-snug font-semibold tracking-tight">{headline(p.status, ngn(p.price_kobo), codes)}</p>
-      </Card>
+      <FadeUp delay={0.1} className="mt-8">
+        <JourneyPath steps={steps} />
+      </FadeUp>
 
-      <Card className="mt-4">
-        <CardLabel className="mb-4">Progress</CardLabel>
-        <Steps steps={journey(p, "child")} />
-      </Card>
+      <FadeUp delay={0.3} className="mt-8 text-center">
+        <span className={cn(
+          "inline-block rounded-full px-3 py-1 text-xs font-bold",
+          tone === "go" ? "bg-blue text-white" : tone === "stop" ? "bg-stop text-white" : "bg-ink text-white",
+        )}>
+          {STATUS_LABEL[p.status]}
+        </span>
+        <p className="mx-auto mt-3 max-w-sm text-[24px] leading-tight font-semibold tracking-[-0.02em]">{headline(p.status, ngn(p.price_kobo), codes)}</p>
+        {steps.at(-1)?.detail && <p className="mt-2 text-sm text-muted">{steps.at(-1)!.detail}</p>}
+      </FadeUp>
 
-      <Card className="mt-4">
-        <CardLabel className="mb-4">Checked against your parent&apos;s rules</CardLabel>
+      {(p.status === "AUTO_APPROVED" || p.status === "NEEDS_PARENT_APPROVAL") && (
+        <FadeUp delay={0.4} className="mt-6">
+          {p.status === "AUTO_APPROVED" && (
+            <ActionButton url={`/api/purchases/${p.id}/execute`} variant="go">Pay {ngn(p.price_kobo)} from my allowance</ActionButton>
+          )}
+          {p.status === "NEEDS_PARENT_APPROVAL" && <ActionButton url={`/api/purchases/${p.id}/request-approval`}>Ask my parent</ActionButton>}
+        </FadeUp>
+      )}
+
+      <FadeUp delay={0.45} className="mt-12">
+        <h2 className="text-[17px] font-semibold">What LinkPass checked</h2>
+        <p className="mb-4 text-sm text-muted">Your parent&apos;s rules, checked by code, not guessed by AI.</p>
         <Reasons codes={codes} />
-      </Card>
-
-      <div className="mt-6 space-y-3">
-        {p.status === "AUTO_APPROVED" && <ActionButton url={`/api/purchases/${p.id}/execute`} variant="go">Pay {ngn(p.price_kobo)}</ActionButton>}
-        {p.status === "NEEDS_PARENT_APPROVAL" && <ActionButton url={`/api/purchases/${p.id}/request-approval`}>Ask parent</ActionButton>}
-      </div>
+      </FadeUp>
     </main>
   );
 }
