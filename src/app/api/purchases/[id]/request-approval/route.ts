@@ -8,6 +8,6 @@ export const runtime = "nodejs";
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const child = await requireRole("CHILD");
-    requestApproval(getDb(), (await params).id, child.id);
+    await requestApproval((await getDb()), (await params).id, child.id);
   });
 }

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   return handle(async () => {
     if (!demoMode()) throw new PurchaseError("DISABLED", "Demo Mode is off", 404);
     const b = await body<{ action: string; user_id?: string; outcome?: string }>(req);
-    const db = getDb();
+    const db = (await getDb());
     switch (b.action) {
       case "login": {
         if (b.user_id !== "guardian_001" && b.user_id !== "child_001") throw new PurchaseError("INVALID", "Unknown demo user");
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       case "reset": {
         await requireRole("GUARDIAN");
         await bank().adminReset();
-        resetDb();
+        await resetDb();
         await clearSession();
         return { ok: true };
       }
@@ -34,13 +34,13 @@ export async function POST(req: Request) {
         await requireRole("GUARDIAN");
         const team = process.env.TEAM_ID ?? "team06";
         const { secret } = await bank().registerWebhook(`http://app.${team}.svc.cluster.local/api/webhooks/forge`);
-        db.prepare("INSERT OR REPLACE INTO settings VALUES ('webhook_secret', ?)").run(secret);
+        await db.run("INSERT OR REPLACE INTO settings VALUES ('webhook_secret', ?)", secret);
         return { ok: true };
       }
       case "outcome": {
         await requireRole("GUARDIAN");
-        if (!b.outcome) db.prepare("DELETE FROM settings WHERE key = 'next_transfer_outcome'").run();
-        else if (OUTCOMES.includes(b.outcome)) db.prepare("INSERT OR REPLACE INTO settings VALUES ('next_transfer_outcome', ?)").run(b.outcome);
+        if (!b.outcome) await db.run("DELETE FROM settings WHERE key = 'next_transfer_outcome'");
+        else if (OUTCOMES.includes(b.outcome)) await db.run("INSERT OR REPLACE INTO settings VALUES ('next_transfer_outcome', ?)", b.outcome);
         return { ok: true };
       }
       default:

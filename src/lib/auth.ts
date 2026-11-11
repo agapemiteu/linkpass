@@ -27,9 +27,9 @@ export async function currentUser(): Promise<SessionUser | null> {
   const sig = Buffer.from(raw.slice(i + 1));
   const want = Buffer.from(sign(id));
   if (sig.length !== want.length || !timingSafeEqual(sig, want)) return null;
-  const u = getDb().prepare("SELECT id, display_name, role, family_id FROM users WHERE id = ?").get(id) as
-    | { id: string; display_name: string; role: "GUARDIAN" | "CHILD"; family_id: string }
-    | undefined;
+  const u = await (await getDb()).get<{ id: string; display_name: string; role: "GUARDIAN" | "CHILD"; family_id: string }>(
+    "SELECT id, display_name, role, family_id FROM users WHERE id = ?", id,
+  );
   return u ? { id: u.id, displayName: u.display_name, role: u.role, familyId: u.family_id } : null;
 }
 
@@ -46,8 +46,6 @@ export async function requireRole(role: SessionUser["role"]) {
   return u;
 }
 
-export function childOf(familyId: string) {
-  return getDb().prepare("SELECT id, display_name FROM users WHERE family_id = ? AND role = 'CHILD' LIMIT 1").get(familyId) as
-    | { id: string; display_name: string }
-    | undefined;
+export async function childOf(familyId: string) {
+  return (await getDb()).get<{ id: string; display_name: string }>("SELECT id, display_name FROM users WHERE family_id = ? AND role = 'CHILD' LIMIT 1", familyId);
 }

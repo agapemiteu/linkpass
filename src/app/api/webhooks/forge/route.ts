@@ -9,8 +9,8 @@ export const runtime = "nodejs";
 // A signed event only triggers a status check with the bank; it never sets state on its own.
 export async function POST(req: Request) {
   const raw = await req.text();
-  const db = getDb();
-  const secret = (db.prepare("SELECT value FROM settings WHERE key = 'webhook_secret'").get() as { value: string } | undefined)?.value;
+  const db = (await getDb());
+  const secret = (await db.get<{ value: string }>("SELECT value FROM settings WHERE key = 'webhook_secret'"))?.value;
   if (!secret || !verifySignature(raw, req.headers.get("x-forge-timestamp"), req.headers.get("x-forge-signature"), secret)) {
     return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
@@ -22,12 +22,12 @@ export async function POST(req: Request) {
   }
   if (!evt.event_id || !evt.event) return NextResponse.json({ error: "missing event_id" }, { status: 400 });
 
-  const fresh = db.prepare("INSERT OR IGNORE INTO webhook_events VALUES (?,?,?,?)").run(evt.event_id, evt.event, raw, new Date().toISOString());
+  const fresh = await db.run("INSERT OR IGNORE INTO webhook_events VALUES (?,?,?,?)", evt.event_id, evt.event, raw, new Date().toISOString());
   if (fresh.changes === 0) return NextResponse.json({ ok: true, duplicate: true });
 
   const ref = evt.data?.reference;
   if (ref && (evt.event.startsWith("transfer.") || evt.event.startsWith("payment."))) {
-    const a = db.prepare("SELECT purchase_request_id FROM payment_attempts WHERE bank_reference = ?").get(ref) as { purchase_request_id: string } | undefined;
+    const a = await db.get<{ purchase_request_id: string }>("SELECT purchase_request_id FROM payment_attempts WHERE bank_reference = ?", ref);
     if (a) await refresh(db, bank(), a.purchase_request_id);
   }
   return NextResponse.json({ ok: true });

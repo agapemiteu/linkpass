@@ -18,6 +18,6 @@ function returnBase(req: Request) {
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const guardian = await requireRole("GUARDIAN");
-    return startCheckout(getDb(), bank(), (await params).id, guardian, returnBase(req));
+    return await startCheckout((await getDb()), bank(), (await params).id, guardian, returnBase(req));
   });
 }

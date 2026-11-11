@@ -19,31 +19,39 @@ const PURCHASE_SQL = `SELECT p.id, p.status, p.price_kobo, p.reason_codes, p.cre
   FROM purchase_requests p JOIN offers o ON o.id = p.offer_id JOIN merchants m ON m.id = p.merchant_id JOIN users u ON u.id = p.child_id
   LEFT JOIN payment_attempts a ON a.purchase_request_id = p.id LEFT JOIN approvals ap ON ap.purchase_request_id = p.id`;
 
-export function purchasesFor(childId: string, limit = 20) {
-  return getDb().prepare(`${PURCHASE_SQL} WHERE p.child_id = ? ORDER BY p.created_at DESC LIMIT ?`).all(childId, limit) as PurchaseCard[];
+export async function purchasesFor(childId: string, limit = 20) {
+  const rows = await (await getDb()).all<PurchaseCard>(`${PURCHASE_SQL} WHERE p.child_id = ? ORDER BY p.created_at DESC LIMIT ?`, childId, limit);
+  return rows.map(num);
 }
 
-export function purchaseFor(id: string, familyId: string) {
-  return getDb().prepare(`${PURCHASE_SQL} WHERE p.id = ? AND u.family_id = ?`).get(id, familyId) as PurchaseCard | undefined;
+export async function purchaseFor(id: string, familyId: string) {
+  const row = await (await getDb()).get<PurchaseCard>(`${PURCHASE_SQL} WHERE p.id = ? AND u.family_id = ?`, id, familyId);
+  return row && num(row);
 }
 
-export function familySummary(childId: string) {
-  const db = getDb();
-  const policy = activePolicy(db, childId);
-  const merchantNames = policy
-    ? (db.prepare(`SELECT id, display_name FROM merchants WHERE id IN (${policy.merchants.map(() => "?").join(",") || "''"})`).all(...policy.merchants.map((m) => m.merchantId)) as { id: string; display_name: string }[])
+// libSQL can return numeric columns as strings or bigints; normalise the ones the UI does maths on.
+const num = (p: PurchaseCard): PurchaseCard => ({ ...p, price_kobo: Number(p.price_kobo), merchant_verified: Number(p.merchant_verified) });
+
+export async function familySummary(childId: string) {
+  const db = await getDb();
+  const policy = await activePolicy(db, childId);
+  const ids = policy?.merchants.map((m) => m.merchantId) ?? [];
+  const merchantNames = ids.length
+    ? await db.all<{ id: string; display_name: string }>(`SELECT id, display_name FROM merchants WHERE id IN (${ids.map(() => "?").join(",")})`, ...ids)
     : [];
-  return { balances: balances(db, childId), policy, merchantNames };
+  return { balances: await balances(db, childId), policy, merchantNames };
 }
 
-export function verifiedMerchants() {
-  return getDb().prepare("SELECT id, display_name, category FROM merchants WHERE identity_verification_status = 'VERIFIED' AND active = 1 ORDER BY display_name").all() as { id: string; display_name: string; category: string }[];
+export async function verifiedMerchants() {
+  return (await getDb()).all<{ id: string; display_name: string; category: string }>(
+    "SELECT id, display_name, category FROM merchants WHERE identity_verification_status = 'VERIFIED' AND active = 1 ORDER BY display_name",
+  );
 }
 
-export function activity(childId: string, limit = 30) {
-  return getDb().prepare("SELECT * FROM audit_events WHERE child_id = ? ORDER BY id DESC LIMIT ?").all(childId, limit) as {
-    id: number; purchase_request_id: string | null; actor: string; event: string; detail: string | null; created_at: string;
-  }[];
+export async function activity(childId: string, limit = 30) {
+  return (await getDb()).all<{ id: number; purchase_request_id: string | null; actor: string; event: string; detail: string | null; created_at: string }>(
+    "SELECT * FROM audit_events WHERE child_id = ? ORDER BY id DESC LIMIT ?", childId, limit,
+  );
 }
 
 export const STATUS_LABEL: Record<PurchaseStatus, string> = {

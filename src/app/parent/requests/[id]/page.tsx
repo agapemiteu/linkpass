@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export default async function ParentRequest({ params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser();
   if (user?.role !== "GUARDIAN") redirect("/");
-  const p = purchaseFor((await params).id, user.familyId);
+  const p = await purchaseFor((await params).id, user.familyId);
   if (!p) notFound();
   const failing = (JSON.parse(p.reason_codes) as ReasonCode[]).filter((c) => !isPassing(c));
   const open = ["RESERVED", "PAYMENT_PENDING", "PAYMENT_READY"].includes(p.status);

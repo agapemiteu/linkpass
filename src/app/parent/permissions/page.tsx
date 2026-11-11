@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 export default async function Permissions() {
   const user = await currentUser();
   if (user?.role !== "GUARDIAN") redirect("/");
-  const child = childOf(user.familyId)!;
-  const { policy } = familySummary(child.id);
+  const child = (await childOf(user.familyId))!;
+  const { policy } = await familySummary(child.id);
   const daysLeft = policy ? Math.max(1, Math.ceil((new Date(policy.expiresAt).getTime() - Date.now()) / 86400_000)) : 30;
 
   return (
@@ -25,7 +25,7 @@ export default async function Permissions() {
       <p className="mt-1 text-[15px] text-muted">What {child.display_name} can buy without asking you. Saving creates a new version; earlier ones are kept.</p>
       <PermissionsForm
         childName={child.display_name}
-        merchants={verifiedMerchants()}
+        merchants={await verifiedMerchants()}
         initial={{
           maxSingle: policy ? policy.maximumSinglePurchaseKobo / 100 : 20000,
           daily: policy ? policy.dailyLimitKobo / 100 : 40000,

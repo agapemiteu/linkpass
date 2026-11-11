@@ -11,13 +11,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const user = await currentUser();
     if (!user) throw new AuthError(401);
     const { id } = await params;
-    const db = getDb();
-    const p = getPurchase(db, id);
-    const owner = p && (db.prepare("SELECT family_id FROM users WHERE id = ?").get(p.child_id) as { family_id: string });
+    const db = (await getDb());
+    const p = await getPurchase(db, id);
+    const owner = p && (await db.get<{ family_id: string }>("SELECT family_id FROM users WHERE id = ?", p.child_id));
     if (!p || owner?.family_id !== user.familyId) throw new PurchaseError("NOT_FOUND", "Purchase not found", 404);
     await refresh(db, bank(), id);
-    const fresh = getPurchase(db, id)!;
-    const a = getAttempt(db, id);
+    const fresh = (await getPurchase(db, id))!;
+    const a = await getAttempt(db, id);
     return {
       status: fresh.status,
       decision: fresh.decision,

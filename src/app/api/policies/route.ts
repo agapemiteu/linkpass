@@ -14,11 +14,11 @@ const naira = (v: unknown) => {
 export async function POST(req: Request) {
   return handle(async () => {
     const guardian = await requireRole("GUARDIAN");
-    const child = childOf(guardian.familyId)!;
+    const child = (await childOf(guardian.familyId))!;
     const b = await body<{ action?: string; max_single_ngn: number; daily_limit_ngn: number; merchant_ids: string[]; categories: string[]; days: number }>(req);
-    if (b.action === "revoke") return revokePolicy(getDb(), guardian, child.id);
+    if (b.action === "revoke") return await revokePolicy((await getDb()), guardian, child.id);
     const days = Math.min(Math.max(Math.round(Number(b.days) || 30), 1), 365);
-    const version = savePolicy(getDb(), guardian, child.id, {
+    const version = await savePolicy((await getDb()), guardian, child.id, {
       maximumSinglePurchaseKobo: naira(b.max_single_ngn),
       dailyLimitKobo: naira(b.daily_limit_ngn),
       merchantIds: (b.merchant_ids ?? []).map(String),

@@ -37,11 +37,11 @@ function greeting() {
 export default async function ParentHome() {
   const user = await currentUser();
   if (user?.role !== "GUARDIAN") redirect("/");
-  const child = childOf(user.familyId)!;
-  const { balances, policy, merchantNames } = familySummary(child.id);
-  const purchases = purchasesFor(child.id, 20);
+  const child = (await childOf(user.familyId))!;
+  const { balances, policy, merchantNames } = await familySummary(child.id);
+  const purchases = await purchasesFor(child.id, 20);
   const waiting = purchases.filter((p) => ["APPROVAL_REQUIRED", "APPROVED", "PAYMENT_READY"].includes(p.status));
-  const events = activity(child.id, 10);
+  const events = await activity(child.id, 10);
   const fmtDate = (s: string) => new Date(s).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
   return (

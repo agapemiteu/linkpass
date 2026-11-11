@@ -13,8 +13,8 @@ export const dynamic = "force-dynamic";
 export default async function ChildHome() {
   const user = await currentUser();
   if (user?.role !== "CHILD") redirect("/");
-  const { balances, policy, merchantNames } = familySummary(user.id);
-  const purchases = purchasesFor(user.id, 10);
+  const { balances, policy, merchantNames } = await familySummary(user.id);
+  const purchases = await purchasesFor(user.id, 10);
   const used = balances.fundedKobo ? Math.round(((balances.spentKobo + balances.reservedKobo) / balances.fundedKobo) * 100) : 0;
 
   return (

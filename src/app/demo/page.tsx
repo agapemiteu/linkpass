@@ -14,9 +14,10 @@ const OUTCOMES = ["pending", "timeout", "failed", "reversed"];
 export default async function Demo() {
   const user = await currentUser();
   if (user?.role !== "GUARDIAN" || process.env.DEMO_MODE === "false") redirect("/");
-  const db = getDb();
-  const setting = (k: string) => (db.prepare("SELECT value FROM settings WHERE key = ?").get(k) as { value: string } | undefined)?.value;
-  const next = setting("next_transfer_outcome");
+  const db = (await getDb());
+  const setting = async (k: string) => (await db.get<{ value: string }>("SELECT value FROM settings WHERE key = ?", k))?.value;
+  const next = await setting("next_transfer_outcome");
+  const webhook = await setting("webhook_secret");
 
   return (
     <main className="mx-auto max-w-md px-4 pb-16">
@@ -29,7 +30,7 @@ export default async function Demo() {
 
       <Card className="mt-6 divide-y divide-line py-2">
         <Row label="Bank">{process.env.BANK_PROVIDER === "forge" ? "Forge sandbox" : "MOCK (local only)"}</Row>
-        <Row label="Webhook">{setting("webhook_secret") ? "Registered" : "Not registered"}</Row>
+        <Row label="Webhook">{webhook ? "Registered" : "Not registered"}</Row>
         <Row label="Next transfer">{next ?? "Normal"}</Row>
       </Card>
 

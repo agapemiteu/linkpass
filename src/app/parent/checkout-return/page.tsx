@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function CheckoutReturn({ searchParams }: { searchParams: Promise<{ purchase?: string }> }) {
   const user = await currentUser();
   const id = (await searchParams).purchase;
-  if (user?.role !== "GUARDIAN" || !id || !purchaseFor(id, user.familyId)) redirect("/parent");
-  await refresh(getDb(), bank(), id);
+  if (user?.role !== "GUARDIAN" || !id || !await purchaseFor(id, user.familyId)) redirect("/parent");
+  await refresh((await getDb()), bank(), id);
   redirect(`/parent/requests/${id}`);
 }

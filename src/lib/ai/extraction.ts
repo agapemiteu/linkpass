@@ -50,9 +50,9 @@ export type ExtractInput = { url?: string; description?: string; imageDataUrl?: 
 export type ExtractOutput = { extraction: Extraction | null; source: "huawei" | "cache" | "unavailable"; model?: string; error?: string };
 
 export async function extractProduct(input: ExtractInput): Promise<ExtractOutput> {
-  const db = getDb();
+  const db = await getDb();
   const key = createHash("sha256").update(JSON.stringify(input)).digest("hex");
-  const cached = db.prepare("SELECT value FROM ai_cache WHERE key = ?").get(key) as { value: string } | undefined;
+  const cached = await db.get<{ value: string }>("SELECT value FROM ai_cache WHERE key = ?", key);
   if (cached) return { extraction: Extraction.parse(JSON.parse(cached.value)), source: "cache" };
 
   const c = ai();
@@ -79,7 +79,7 @@ export async function extractProduct(input: ExtractInput): Promise<ExtractOutput
       chat_template_kwargs: { thinking: false },
     });
     const extraction = parseJson(res.choices[0]?.message?.content ?? "");
-    db.prepare("INSERT OR REPLACE INTO ai_cache VALUES (?,?,?)").run(key, JSON.stringify(extraction), new Date().toISOString());
+    await db.run("INSERT OR REPLACE INTO ai_cache VALUES (?,?,?)", key, JSON.stringify(extraction), new Date().toISOString());
     return { extraction, source: "huawei", model };
   } catch (e) {
     return { extraction: null, source: "unavailable", model, error: e instanceof Error ? e.message : String(e) };

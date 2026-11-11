@@ -11,13 +11,13 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   return handle(async () => {
     const user = await currentUser();
     if (!user) throw new AuthError(401);
-    const db = getDb();
+    const db = (await getDb());
     // Demo Mode only: a one-shot forced bank outcome set from the demo panel (x-test-outcome).
     let outcome: TestOutcome | undefined;
     if (demoMode()) {
-      const row = db.prepare("DELETE FROM settings WHERE key = 'next_transfer_outcome' RETURNING value").get() as { value: TestOutcome } | undefined;
+      const row = await db.get<{ value: TestOutcome }>("DELETE FROM settings WHERE key = 'next_transfer_outcome' RETURNING value");
       outcome = row?.value;
     }
-    return executeTransfer(db, bank(), (await params).id, user, CONTROLLED_SOURCE_ACCOUNT, outcome);
+    return await executeTransfer(db, bank(), (await params).id, user, CONTROLLED_SOURCE_ACCOUNT, outcome);
   });
 }

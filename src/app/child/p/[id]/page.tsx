@@ -55,7 +55,7 @@ const GLOW = {
 export default async function ChildPurchase({ params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser();
   if (user?.role !== "CHILD") redirect("/");
-  const p = purchaseFor((await params).id, user.familyId);
+  const p = await purchaseFor((await params).id, user.familyId);
   if (!p) notFound();
   const codes = JSON.parse(p.reason_codes) as ReasonCode[];
   const open = ["RESERVED", "PAYMENT_PENDING", "APPROVAL_REQUIRED", "APPROVED", "PAYMENT_READY"].includes(p.status);

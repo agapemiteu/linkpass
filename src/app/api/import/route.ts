@@ -20,9 +20,9 @@ export async function POST(req: Request) {
     if (url && !parsed) throw new PurchaseError("BAD_URL", "That doesn't look like a web link");
 
     const ai = await extractProduct({ url, description, imageDataUrl: image });
-    const db = getDb();
+    const db = (await getDb());
     const handleName = ai.extraction?.claimed_seller_handle?.replace(/^@/, "").toLowerCase() ?? parsed?.handle ?? null;
-    const match = matchOffer(db, {
+    const match = await matchOffer(db, {
       canonicalUrl: parsed?.canonical,
       platform: parsed?.platform === "web" ? "instagram" : parsed?.platform,
       handle: parsed?.handle ?? handleName,

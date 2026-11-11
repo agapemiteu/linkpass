@@ -12,6 +12,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const b = await body<{ decision: string; method?: string }>(req);
     if (b.decision !== "APPROVE" && b.decision !== "DECLINE") throw new PurchaseError("INVALID", "decision must be APPROVE or DECLINE");
     const method = b.method === "ALLOWANCE" ? "ALLOWANCE" : "CHECKOUT";
-    decide(getDb(), (await params).id, guardian, b.decision, method);
+    await decide((await getDb()), (await params).id, guardian, b.decision, method);
   });
 }
