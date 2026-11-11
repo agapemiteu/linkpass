@@ -46,3 +46,6 @@ next-env.d.ts
 CLAUDE.md
 linkpass.log
 *.yml.bak
+
+.vercel
+.env*
