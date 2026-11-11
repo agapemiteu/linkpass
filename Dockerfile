@@ -11,6 +11,7 @@ RUN tar -xzf /tmp/litestream.tar.gz -C /usr/local/bin litestream
 FROM node:22-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production PORT=8080 HOSTNAME=0.0.0.0 DATABASE_URL=file:/data/linkpass.db
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=build /usr/local/bin/litestream /usr/local/bin/litestream
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
