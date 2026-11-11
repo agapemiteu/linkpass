@@ -257,7 +257,7 @@ export function Discover() {
                         icon: Alert02Icon,
                         text: (
                           <>
-                            Trading {result.match.trust.tradingSince} · {result.match.trust.sales ? `${result.match.trust.sales} sales` : "no sales history"}
+                            Opened {result.match.trust.tradingSince} · {result.match.trust.sales ? `${result.match.trust.sales} sales` : "no sales history"}
                             {result.match.trust.scamReports ? ` · ${result.match.trust.scamReports} scam reports` : ""}
                           </>
                         ),
