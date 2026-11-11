@@ -49,3 +49,8 @@ linkpass.log
 
 .vercel
 .env*
+
+# local notes and tools
+CONTEXT.md
+HANDOFF.md
+start-demo.cmd
