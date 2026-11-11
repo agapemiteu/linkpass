@@ -14,6 +14,7 @@ type Match = {
   offer: { id: string; title: string; description: string; category: string; image_url: string; price_kobo: number };
   merchant: { id: string; display_name: string; verified: boolean };
   handle: string;
+  trust: { rating: number | null; reviews: number; sales: number; tradingSince: string; cacRegistered: boolean; scamReports: number };
 };
 
 type ImportResult = {
@@ -29,7 +30,7 @@ const SAMPLES = [
   { label: "Lookalike shop", note: "test", url: "https://www.instagram.com/osun.threadz/p/canvas-sneakers" },
 ];
 
-const READING = ["Reading the post", "Identifying the product", "Finding the seller", "Confirming the price"];
+const READING = ["Reading the post", "Identifying the product", "Checking sellers across the web", "Confirming the safest price"];
 const ease = [0.22, 1, 0.36, 1] as const;
 const ngn = (kobo: number) => "₦" + (kobo / 100).toLocaleString("en-NG");
 
@@ -250,7 +251,18 @@ export function Discover() {
                   result.match.merchant.verified
                     ? { icon: CheckmarkCircle02Icon, text: <span className="font-medium">Registered LinkPass seller</span>, tone: "text-blue" }
                     : { icon: Alert02Icon, text: <span className="font-medium">Not a registered seller</span>, tone: "text-stop" },
-                  { icon: Tag01Icon, text: <>Price confirmed by the seller</>, tone: "" },
+                  result.match.merchant.verified
+                    ? { icon: Tag01Icon, text: <>Price confirmed by the seller</>, tone: "" }
+                    : {
+                        icon: Alert02Icon,
+                        text: (
+                          <>
+                            Trading {result.match.trust.tradingSince} · {result.match.trust.sales ? `${result.match.trust.sales} sales` : "no sales history"}
+                            {result.match.trust.scamReports ? ` · ${result.match.trust.scamReports} scam reports` : ""}
+                          </>
+                        ),
+                        tone: "text-stop",
+                      },
                 ].map((row, i) => (
                   <motion.li
                     key={i}
@@ -287,6 +299,7 @@ export function Discover() {
           <p className="flex items-center gap-2 px-1 text-[15px] font-semibold text-blue">
             <HugeiconsIcon icon={SparklesIcon} size={18} /> Safer option: same item from a verified seller
           </p>
+          <p className="mt-0.5 px-1 text-xs text-blue/70">Picked by track record across the web · simulated for demo</p>
           <div className="mt-3 space-y-3">
             {result.alternatives.map((alt) => (
               <div key={alt.offer.id} className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm">
@@ -296,6 +309,9 @@ export function Discover() {
                   <p className="truncate text-[15px] font-semibold">{alt.offer.title}</p>
                   <p className="flex items-center gap-1 text-sm text-blue">
                     <HugeiconsIcon icon={CheckmarkCircle02Icon} size={15} /> {alt.merchant.display_name}
+                  </p>
+                  <p className="text-xs text-muted">
+                    ★ {alt.trust.rating ?? "–"} · {alt.trust.sales.toLocaleString()} sales · {alt.trust.cacRegistered ? "CAC-registered" : "unregistered"} · since {alt.trust.tradingSince}
                   </p>
                   <p className="tabular text-sm font-semibold">{ngn(alt.offer.price_kobo)}</p>
                 </div>

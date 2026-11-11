@@ -43,8 +43,8 @@ describe("link handling", () => {
   it("offers the same item from a verified seller when the seller is a lookalike", async () => {
     const db = await openDb(":memory:");
     const alts = await findSaferAlternatives(db, { title: "Canvas low-top sneakers", category: "footwear", excludeMerchantId: "unv_001" });
-    expect(alts[0]?.offer.id).toBe("off_sneaker");
-    expect(alts.every((a) => a.merchant.verified)).toBe(true);
+    expect(alts.map((a) => a.offer.id)).toEqual(["off_sneaker"]); // the same item only, not the red sneakers
+    expect(alts[0].trust.scamReports).toBe(0);
   });
 
   it("never suggests an unrelated item", async () => {

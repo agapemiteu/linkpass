@@ -1,4 +1,5 @@
 import type { Db } from "@/lib/db";
+import { trustFor, trustScore, type Trust } from "./trust";
 
 // URLs are parsed, never fetched: no server-side requests to user-supplied addresses (SSRF).
 export function parseSocialUrl(raw: string) {
@@ -21,6 +22,7 @@ export type OfferMatch = {
   merchant: { id: string; display_name: string; verified: boolean; resolved_account_name: string; bank_account_number: string };
   handle: string;
   matchedBy: "seeded_link" | "seller_and_title";
+  trust: Trust;
 };
 
 type Row = {
@@ -36,28 +38,29 @@ const toMatch = (r: Row, matchedBy: OfferMatch["matchedBy"]): OfferMatch => ({
   merchant: { id: r.m_id, display_name: r.display_name, verified: r.identity_verification_status === "VERIFIED", resolved_account_name: r.resolved_account_name, bank_account_number: r.bank_account_number },
   handle: r.handle,
   matchedBy,
+  trust: trustFor(r.m_id),
 });
 
 const words = (s: string) => new Set(s.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2));
 
-// Safer route: the same kind of item from verified sellers, best title match first.
+// Safer route: the same item from verified sellers, safest track record first.
 export async function findSaferAlternatives(db: Db, input: { title?: string | null; category?: string | null; excludeMerchantId?: string }): Promise<OfferMatch[]> {
-  if (!input.title && !input.category) return [];
+  const want = words(input.title ?? "");
+  if (!want.size) return [];
   const rows = await db.all<Row>(
     `${SELECT} WHERE m.identity_verification_status = 'VERIFIED' AND m.active = 1 AND o.status = 'CONFIRMED' AND s.verified_binding = 1 AND m.id != ?`,
     input.excludeMerchantId ?? "",
   );
-  const want = words(input.title ?? "");
   return rows
-    .map((r) => {
+    .filter((r) => {
+      if (input.category && r.category !== input.category) return false;
       const have = words(r.title);
-      const overlap = want.size ? [...want].filter((w) => have.has(w)).length / want.size : 0;
-      return { r, score: overlap + (input.category && r.category === input.category ? 0.25 : 0) };
+      const shared = [...want].filter((w) => have.has(w)).length;
+      return shared / new Set([...want, ...have]).size >= 0.6; // same item, not just similar
     })
-    .filter((x) => x.score >= 0.5)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 2)
-    .map((x) => toMatch(x.r, "seller_and_title"));
+    .map((r) => toMatch(r, "seller_and_title"))
+    .sort((a, b) => trustScore(b.trust) - trustScore(a.trust))
+    .slice(0, 2);
 }
 
 // Exact identity first: the seller is whoever the registered profile says, never a lookalike.
