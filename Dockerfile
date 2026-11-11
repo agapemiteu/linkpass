@@ -5,14 +5,18 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
+ADD https://github.com/benbjohnson/litestream/releases/download/v0.3.13/litestream-v0.3.13-linux-amd64.tar.gz /tmp/litestream.tar.gz
+RUN tar -xzf /tmp/litestream.tar.gz -C /usr/local/bin litestream
 
 FROM node:22-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production PORT=8080 HOSTNAME=0.0.0.0 DATABASE_URL=file:/data/linkpass.db
+COPY --from=build /usr/local/bin/litestream /usr/local/bin/litestream
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
-RUN mkdir -p /data && chown node:node /data
+COPY litestream.yml start.sh ./
+RUN mkdir -p /data && chown node:node /data && chmod +x start.sh
 USER node
 EXPOSE 8080
-CMD ["node", "server.js"]
+CMD ["./start.sh"]

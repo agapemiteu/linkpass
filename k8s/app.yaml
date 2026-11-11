@@ -20,6 +20,8 @@ spec:
             - containerPort: 8080
           envFrom:
             - secretRef: { name: huawei-gateway, optional: true }
+            # Cloudflare R2 credentials for Litestream; created by hand, never committed.
+            - secretRef: { name: linkpass-r2, optional: true }
           env:
             - { name: BANK_PROVIDER, value: forge }
             - { name: APP_BASE_URL, value: "https://team06.xtradot.co" }
@@ -37,9 +39,8 @@ spec:
             limits: { cpu: 500m, memory: 512Mi }
       volumes:
         - name: data
-          # TEMPORARY: the platform cannot provision volumes yet (Linode billing error). Data survives
-          # container restarts but not pod rescheduling. Switch back once k8s/pvc.yaml binds:
-          # persistentVolumeClaim: { claimName: linkpass-data }
+          # The platform cannot provision volumes (Linode billing). The database lives here and
+          # Litestream streams it to Cloudflare R2, restoring it when a new pod starts.
           emptyDir: {}
 ---
 apiVersion: v1

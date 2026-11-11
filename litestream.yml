@@ -1,0 +1,12 @@
+# Streams the SQLite database to Cloudflare R2 and restores it on start.
+# Credentials come from the linkpass-r2 Kubernetes secret, never from this file.
+dbs:
+  - path: /data/linkpass.db
+    replicas:
+      - type: s3
+        bucket: ${R2_BUCKET}
+        path: linkpass
+        endpoint: https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+        region: auto
+        force-path-style: true
+        sync-interval: 1s
