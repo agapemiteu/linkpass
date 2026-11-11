@@ -10,14 +10,17 @@ import {
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 
+type Match = {
+  offer: { id: string; title: string; description: string; category: string; image_url: string; price_kobo: number };
+  merchant: { id: string; display_name: string; verified: boolean };
+  handle: string;
+};
+
 type ImportResult = {
+  alternatives: Match[];
   ai: { source: string; model?: string; error?: string; extraction: { product_title: string | null; missing_fields: string[] } | null };
   claimed_handle: string | null;
-  match: {
-    offer: { id: string; title: string; description: string; category: string; image_url: string; price_kobo: number };
-    merchant: { id: string; display_name: string; verified: boolean };
-    handle: string;
-  } | null;
+  match: Match | null;
 };
 
 const SAMPLES = [
@@ -72,13 +75,13 @@ export function Discover() {
     }
   }
 
-  async function buy() {
-    if (!result?.match) return;
+  async function buy(offerId = result?.match?.offer.id) {
+    if (!result || !offerId) return;
     setPhase("buying");
     const res = await fetch("/api/purchases/evaluate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ offer_id: result.match.offer.id, source_url: url || undefined, extracted: result.ai.extraction }),
+      body: JSON.stringify({ offer_id: offerId, source_url: url || undefined, extracted: result.ai.extraction }),
     }).catch(() => null);
     const data = res ? await res.json() : { error: "Couldn't reach LinkPass. Try again." };
     if (!res?.ok) {
@@ -261,13 +264,53 @@ export function Discover() {
                   </motion.li>
                 ))}
               </ul>
-              <Button className="mt-5" onClick={buy} disabled={phase === "buying"}>
-                {phase === "buying" ? "Checking your rules…" : "Buy with LinkPass"}
+              <Button
+                className="mt-5"
+                variant={result.match.merchant.verified ? "primary" : "outline"}
+                onClick={() => buy()}
+                disabled={phase === "buying"}
+              >
+                {phase === "buying" ? "Checking your rules…" : result.match.merchant.verified ? "Buy with LinkPass" : "Check this seller anyway"}
               </Button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {result && result.alternatives.length > 0 && (
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.45, ease }}
+          className="mt-4 rounded-3xl bg-blue-soft p-4 ring-1 ring-blue/20"
+        >
+          <p className="flex items-center gap-2 px-1 text-[15px] font-semibold text-blue">
+            <HugeiconsIcon icon={SparklesIcon} size={18} /> Safer option: same item from a verified seller
+          </p>
+          <div className="mt-3 space-y-3">
+            {result.alternatives.map((alt) => (
+              <div key={alt.offer.id} className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={alt.offer.image_url} alt="" className="size-16 rounded-xl object-cover" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-semibold">{alt.offer.title}</p>
+                  <p className="flex items-center gap-1 text-sm text-blue">
+                    <HugeiconsIcon icon={CheckmarkCircle02Icon} size={15} /> {alt.merchant.display_name}
+                  </p>
+                  <p className="tabular text-sm font-semibold">{ngn(alt.offer.price_kobo)}</p>
+                </div>
+                <button
+                  onClick={() => buy(alt.offer.id)}
+                  disabled={phase === "buying"}
+                  className="h-10 shrink-0 rounded-full bg-blue px-4 text-sm font-semibold text-white disabled:opacity-50"
+                >
+                  Buy safely
+                </button>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+      )}
 
       {error && <p className="mt-3 text-sm text-stop" role="alert">{error}</p>}
     </div>

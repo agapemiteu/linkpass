@@ -6,6 +6,8 @@ Read this first. It covers what LinkPass is, what's built and where everything r
 
 LinkPass lets teenagers (13–17) buy things they find on Instagram, TikTok or WhatsApp, inside rules their parent set once. The child pastes a link. Huawei AI identifies the product, and LinkPass matches it to a **verified seller's confirmed offer**. A **deterministic rules engine** (plain code, never AI) checks seller, category, per-item limit, daily limit, expiry and funds. Inside the rules, the purchase is paid from a pre-funded allowance by a real **Access (Xtradot) sandbox bank transfer**, with no parent tap. Outside the rules, the parent approves, then pays at the bank's hosted checkout or approves it from the allowance. Lookalike sellers are blocked. Nothing shows as "Paid" until the bank confirms it.
 
+Tagline: **Safe spending for every child.** Supporting line: **Their freedom. Your rules.**
+
 Hackathon: Access Youth Tech Forge 2026, Payments and Financial Infrastructure track. Team Pak, **team06**.
 
 ## 2. Ground rules (from the owner)
@@ -35,7 +37,7 @@ Hackathon: Access Youth Tech Forge 2026, Payments and Financial Infrastructure t
 **Done and verified live on the sandbox**
 - Scenario A: ₦15k sneakers, approved automatically, real intrabank transfer, `PAID`. A second tap is rejected.
 - Scenario B: ₦35k sneakers, needs the parent, approved, hosted checkout paid with the test card, `verify` = successful, `PAID`.
-- Scenario C: lookalike `@osun.threadz`, `BLOCKED`, no transfer.
+- Scenario C: lookalike `@osun.threadz`, `BLOCKED`, no transfer. The app then offers the same item from a verified seller (`findSaferAlternatives`).
 - Scenario D: forced timeout, `PAYMENT_PENDING`, funds held, bank reversal, funds released. Never resent.
 - Huawei `glm-5.2` product extraction works (~8 s). Without AI it falls back to matching from the link.
 - 32 unit tests (policy, ledger, concurrency, timeout/reversal, webhook signature, SSRF/lookalike).

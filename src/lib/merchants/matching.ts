@@ -40,6 +40,26 @@ const toMatch = (r: Row, matchedBy: OfferMatch["matchedBy"]): OfferMatch => ({
 
 const words = (s: string) => new Set(s.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2));
 
+// Safer route: the same kind of item from verified sellers, best title match first.
+export async function findSaferAlternatives(db: Db, input: { title?: string | null; category?: string | null; excludeMerchantId?: string }): Promise<OfferMatch[]> {
+  if (!input.title && !input.category) return [];
+  const rows = await db.all<Row>(
+    `${SELECT} WHERE m.identity_verification_status = 'VERIFIED' AND m.active = 1 AND o.status = 'CONFIRMED' AND s.verified_binding = 1 AND m.id != ?`,
+    input.excludeMerchantId ?? "",
+  );
+  const want = words(input.title ?? "");
+  return rows
+    .map((r) => {
+      const have = words(r.title);
+      const overlap = want.size ? [...want].filter((w) => have.has(w)).length / want.size : 0;
+      return { r, score: overlap + (input.category && r.category === input.category ? 0.25 : 0) };
+    })
+    .filter((x) => x.score >= 0.5)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 2)
+    .map((x) => toMatch(x.r, "seller_and_title"));
+}
+
 // Exact identity first: the seller is whoever the registered profile says, never a lookalike.
 export async function matchOffer(db: Db, input: { canonicalUrl?: string; platform?: string; handle?: string | null; title?: string | null }): Promise<OfferMatch | null> {
   if (input.canonicalUrl) {
