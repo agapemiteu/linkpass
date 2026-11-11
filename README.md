@@ -2,6 +2,8 @@
 
 Let your children shop independently, on your terms.
 
+**Try the preview:** https://linkpass-iota.vercel.app (mock bank; the live demo runs on the Access Forge sandbox)
+
 A child pastes a product link. LinkPass matches it to a confirmed offer from a registered seller and checks it against the parent's rules. If every rule passes, it pays from a pre-funded allowance by bank transfer. If not, the request goes to the parent. Built for Access Youth Tech Forge 2026 (Payments and Financial Infrastructure) on the Xtradot Bank sandbox and Huawei MaaS.
 
 ## How money moves
