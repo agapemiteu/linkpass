@@ -1,6 +1,6 @@
 # LinkPass
 
-Let your children shop independently, on your terms.
+Safe spending for every child. Their freedom. Your rules.
 
 **Try the preview:** https://linkpass-iota.vercel.app (mock bank; the live demo runs on the Access Forge sandbox)
 

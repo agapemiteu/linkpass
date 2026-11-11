@@ -30,8 +30,8 @@ const CHAPTERS = [
   {
     n: "03",
     color: "bg-mint",
-    title: "LinkPass checks, the bank pays",
-    text: "Inside your rules, Access Bank pays the verified seller straight away. Outside them, it comes to you. Lookalike shops are blocked.",
+    title: "LinkPass checks, Access pays",
+    text: "Inside your rules, Access pays the verified seller in seconds. Outside them, it comes to you. Lookalike shops are blocked.",
     photo: null,
     tag: "Bank",
   },
@@ -93,11 +93,25 @@ export default function Welcome() {
           <span aria-hidden className="absolute -top-20 -right-20 size-60 rounded-full bg-sun/25 blur-3xl" />
           <FadeUp className="relative">
             <h1 className="text-[2.5rem] leading-[1.03] font-semibold tracking-[-0.035em] lg:text-[3.4rem]">
-              Let your children shop independently, <span className="bg-gradient-to-r from-blue to-lilac bg-clip-text text-transparent">on your terms.</span>
+              Safe spending <span className="bg-gradient-to-r from-blue to-lilac bg-clip-text text-transparent">for every child.</span>
             </h1>
-            <p className="mt-4 text-[17px] leading-relaxed text-muted">
-              Kids find what they love online. You set the rules once. Everything inside the rules just works; everything else comes to you.
+            <p className="mt-3 text-[17px] font-semibold text-coral">Their freedom. Your rules.</p>
+            <p className="mt-3 text-[17px] leading-relaxed text-muted">
+              Kids find what they love online. You set the rules once. Inside them, Access pays the seller. Outside them, it comes to you. Fake shops are blocked.
             </p>
+            <div className="mt-6 grid grid-cols-3 gap-2">
+              {[
+                ["98M", "children under 18"],
+                ["83%", "shop on social media"],
+                ["76%", "fear kids can't spot scams"],
+              ].map(([n, l]) => (
+                <div key={n} className="rounded-2xl bg-paper px-3 py-3">
+                  <p className="text-[22px] font-semibold tracking-tight">{n}</p>
+                  <p className="text-[12px] leading-tight text-muted">{l}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-muted">UNICEF 2025 · Visa Stay Secure, Nigeria 2026</p>
           </FadeUp>
           <FadeUp delay={0.2} className="relative mt-8">
             <p className="mb-3 text-[13px] font-medium text-muted">Step in as · Demo Mode with sandbox money</p>
@@ -144,8 +158,8 @@ export default function Welcome() {
       {/* Close */}
       <section className="bg-ink px-5 py-20 text-white">
         <Reveal className="mx-auto max-w-md text-center">
-          <h2 className="text-[2rem] leading-tight font-semibold tracking-[-0.03em]">See it from both sides.</h2>
-          <p className="mt-2 mb-8 text-white/70">Real sandbox bank transfers, real AI. Pick a person to start.</p>
+          <h2 className="text-[2rem] leading-tight font-semibold tracking-[-0.03em]">Safe spending for every child.</h2>
+          <p className="mt-2 mb-8 text-white/70">Their freedom. Your rules. Step in as a parent or a child to see it work.</p>
           <RoleChooser roles={ROLES} />
           <p className="mt-8 text-xs text-white/50">Photos: Pexels and Unsplash. All accounts and money are synthetic sandbox data.</p>
         </Reveal>
