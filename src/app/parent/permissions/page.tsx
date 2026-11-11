@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { childOf, currentUser } from "@/lib/auth";
 import { familySummary, verifiedMerchants } from "@/lib/views";
-import { TopBar } from "@/components/ui";
+import { Icon, TopBar } from "@/components/ui";
 import { PermissionsForm } from "@/components/permissions-form";
 
 export const dynamic = "force-dynamic";
@@ -16,8 +18,11 @@ export default async function Permissions() {
   return (
     <main>
       <TopBar name={user.displayName} role="parent" />
-      <h1 className="font-display text-3xl font-medium tracking-tight">Shopping permissions for {child.display_name}</h1>
-      <p className="mt-2 text-sm text-muted">Purchases inside these rules go through without you. Anything outside them comes to you first.</p>
+      <Link href="/parent" className="mb-4 inline-flex items-center gap-1 text-[15px] font-medium text-muted hover:text-ink">
+        <Icon icon={ArrowLeft01Icon} size={18} /> Home
+      </Link>
+      <h1 className="text-[1.75rem] leading-tight font-semibold tracking-[-0.02em]">Shopping permissions</h1>
+      <p className="mt-1 text-[15px] text-muted">What {child.display_name} can buy without asking you. Saving creates a new version; earlier ones are kept.</p>
       <PermissionsForm
         childName={child.display_name}
         merchants={verifiedMerchants()}

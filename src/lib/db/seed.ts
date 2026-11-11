@@ -38,10 +38,10 @@ export function seed(db: Database.Database) {
 
   const offer = db.prepare("INSERT INTO offers VALUES (?,?,?,?,?,?,?,?,?)");
   const img = (id: string) => `https://images.unsplash.com/${id}?w=800&q=80&auto=format&fit=crop`;
-  offer.run("off_sneaker", "mer_206", "Canvas low-top sneakers", "White canvas, rubber sole. Sizes 37–44.",
+  offer.run("off_sneaker", "mer_206", "Canvas low-top sneakers", "Tan canvas, white rubber sole. Sizes 37–44.",
     "footwear", img("photo-1549298916-b41d501d3772"), 1_500_000, "CONFIRMED",
     "https://www.instagram.com/osunthreads/p/canvas-sneakers");
-  offer.run("off_hightop", "mer_206", "Leather high-top sneakers", "Full-grain leather, padded collar. Sizes 37–44.",
+  offer.run("off_hightop", "mer_206", "Red leather sneakers", "Leather upper, cushioned sole. Sizes 37–44.",
     "footwear", img("photo-1542291026-7eec264c27ff"), 3_500_000, "CONFIRMED",
     "https://www.instagram.com/osunthreads/p/leather-hightops");
   offer.run("off_tee", "mer_206", "Adire print tee", "Hand-dyed cotton, relaxed fit.",

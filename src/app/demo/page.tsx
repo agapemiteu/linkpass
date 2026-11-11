@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { currentUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { ActionButton } from "@/components/action-button";
-import { Card, Row, TopBar } from "@/components/ui";
+import { Icon, Row, TopBar } from "@/components/ui";
+import { Card, CardLabel } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -18,27 +21,32 @@ export default async function Demo() {
   return (
     <main>
       <TopBar name={user.displayName} role="parent" />
-      <h1 className="font-display text-3xl font-medium tracking-tight">Demo tools</h1>
-      <p className="mt-2 text-sm text-muted">For judges and testing. Uses only the sandbox&apos;s documented test controls.</p>
+      <Link href="/parent" className="mb-4 inline-flex items-center gap-1 text-[15px] font-medium text-muted hover:text-ink">
+        <Icon icon={ArrowLeft01Icon} size={18} /> Home
+      </Link>
+      <h1 className="text-[1.75rem] font-semibold tracking-[-0.02em]">Demo tools</h1>
+      <p className="mt-1 text-[15px] text-muted">For judges and testing. Uses only the sandbox&apos;s documented test controls.</p>
 
-      <Card className="mt-6">
-        <Row label="Bank provider">{process.env.BANK_PROVIDER === "forge" ? "Forge sandbox (real)" : "MOCK (local only)"}</Row>
-        <Row label="Webhook registered">{setting("webhook_secret") ? "Yes" : "No"}</Row>
-        <Row label="Next transfer outcome">{next ?? "Normal"}</Row>
+      <Card className="mt-6 divide-y divide-line py-2">
+        <Row label="Bank">{process.env.BANK_PROVIDER === "forge" ? "Forge sandbox" : "MOCK (local only)"}</Row>
+        <Row label="Webhook">{setting("webhook_secret") ? "Registered" : "Not registered"}</Row>
+        <Row label="Next transfer">{next ?? "Normal"}</Row>
       </Card>
 
-      <div className="mt-6 space-y-3">
-        <p className="text-sm font-medium">Force the next allowance transfer (x-test-outcome)</p>
-        <div className="grid grid-cols-2 gap-2">
-          {OUTCOMES.map((o) => (
-            <ActionButton key={o} url="/api/demo" payload={{ action: "outcome", outcome: o }} variant="ghost">{o}</ActionButton>
-          ))}
-        </div>
-        <ActionButton url="/api/demo" payload={{ action: "outcome" }} variant="ghost">Back to normal</ActionButton>
+      <CardLabel className="mt-8 mb-2 px-1">Force the next allowance transfer (x-test-outcome)</CardLabel>
+      <div className="grid grid-cols-2 gap-2">
+        {OUTCOMES.map((o) => (
+          <ActionButton key={o} url="/api/demo" payload={{ action: "outcome", outcome: o }} variant="outline">
+            <span className="capitalize">{o}</span>
+          </ActionButton>
+        ))}
+      </div>
+      <div className="mt-2">
+        <ActionButton url="/api/demo" payload={{ action: "outcome" }} variant="secondary">Back to normal</ActionButton>
       </div>
 
       <div className="mt-8 space-y-3">
-        <ActionButton url="/api/demo" payload={{ action: "register-webhook" }} variant="ghost">Register bank webhook</ActionButton>
+        <ActionButton url="/api/demo" payload={{ action: "register-webhook" }} variant="secondary">Register bank webhook</ActionButton>
         <ActionButton url="/api/demo" payload={{ action: "reset" }} variant="danger" then="/" confirm="Reset the bank sandbox and all LinkPass data?">
           Reset everything
         </ActionButton>

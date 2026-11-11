@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import { Button } from "./ui/button";
 
 // POSTs to an API route, then refreshes or navigates. Errors show inline.
 export function ActionButton({
@@ -15,7 +16,7 @@ export function ActionButton({
   url: string;
   payload?: unknown;
   children: ReactNode;
-  variant?: "primary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "outline" | "danger" | "go";
   then?: string | "open-payment";
   confirm?: string;
 }) {
@@ -35,24 +36,18 @@ export function ActionButton({
       else if (then) router.push(then);
       else router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Request failed");
+      setError(e instanceof TypeError ? "Couldn't reach LinkPass. Check your connection and try again." : e instanceof Error ? e.message : "Request failed");
     } finally {
       setBusy(false);
     }
   }
 
-  const style = {
-    primary: "bg-ink text-white hover:bg-black",
-    ghost: "border border-line bg-card hover:border-ink",
-    danger: "border border-stop/30 bg-card text-stop hover:border-stop",
-  }[variant];
-
   return (
     <div className="w-full">
-      <button onClick={run} disabled={busy} className={`h-12 w-full rounded-xl px-4 text-sm font-semibold transition disabled:opacity-60 ${style}`}>
+      <Button onClick={run} disabled={busy} variant={variant}>
         {busy ? "Working…" : children}
-      </button>
-      {error && <p className="mt-2 text-sm text-stop" role="alert">{error}</p>}
+      </Button>
+      {error && <p className="mt-2 text-center text-sm text-stop" role="alert">{error}</p>}
     </div>
   );
 }

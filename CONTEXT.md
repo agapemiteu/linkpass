@@ -13,7 +13,7 @@
 - Links are never fetched (SSRF); the AI only reads URL text, the description and the screenshot.
 
 ## Next
-- Deployed to team06 (image 0c908f6). Live sandbox verified: A paid by real intra transfer, C blocked, D timeout held then reversed + released, B checkout created (needs a human to pay on pay.xtradot.co). Huawei glm-5.2 extraction works.
+- Deployed to team06 (image 0c908f6). Live sandbox verified: A paid by real intra transfer, C blocked, D timeout held then reversed + released, B paid via real checkout + verify. Huawei glm-5.2 extraction works.
 - BLOCKERS (platform): PVC fails (Linode "outstanding balance"), running on emptyDir. teamXX.xtradot.co is behind Cloudflare Access login. Report both to organizers.
 - Not yet run live: screenshot/vision model, webhook delivery observed end to end.
 

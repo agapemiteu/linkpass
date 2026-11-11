@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CheckListIcon } from "@hugeicons/core-free-icons";
 import { ActionButton } from "./action-button";
+import { cn } from "@/lib/utils";
 
 const CATEGORIES = ["clothing", "footwear", "accessories", "books", "groceries", "beauty", "electronics"];
 
@@ -16,49 +19,49 @@ export function PermissionsForm({ childName, merchants, initial, hasPolicy }: { 
 
   return (
     <div className="mt-6 space-y-6">
-      <NumberField label="Maximum automatic purchase" value={v.maxSingle} onChange={(n) => setV({ ...v, maxSingle: n })} />
-      <NumberField label="Daily limit" value={v.daily} onChange={(n) => setV({ ...v, daily: n })} />
+      <Group title="Limits">
+        <NumberField label="Per item, without asking" value={v.maxSingle} onChange={(n) => setV({ ...v, maxSingle: n })} />
+        <NumberField label="Per day" value={v.daily} onChange={(n) => setV({ ...v, daily: n })} />
+        <NumberField label="Valid for" suffix="days" value={v.days} onChange={(n) => setV({ ...v, days: n })} />
+      </Group>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium">Approved sellers</legend>
-        <div className="space-y-2">
-          {merchants.map((m) => (
-            <label key={m.id} className="flex items-center justify-between rounded-xl border border-line bg-card px-4 py-3 text-sm">
-              <span>{m.display_name} <span className="text-muted">· {m.category}</span></span>
-              <input type="checkbox" checked={v.merchantIds.includes(m.id)} onChange={() => toggle("merchantIds", m.id)} className="size-5 accent-ink" />
-            </label>
-          ))}
-        </div>
-        <p className="mt-2 text-xs text-muted">Only verified LinkPass sellers appear here. Approval is tied to the seller&apos;s registered bank account.</p>
-      </fieldset>
+      <Group title="Approved sellers" note="Only verified LinkPass sellers appear here. Approval is tied to the seller's registered bank account.">
+        {merchants.map((m) => (
+          <label key={m.id} className="flex cursor-pointer items-center justify-between px-4 py-3.5">
+            <span className="text-[15px]">
+              {m.display_name} <span className="text-muted">· {m.category}</span>
+            </span>
+            <Switch on={v.merchantIds.includes(m.id)} onClick={() => toggle("merchantIds", m.id)} label={m.display_name} />
+          </label>
+        ))}
+      </Group>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium">Categories</legend>
+      <div>
+        <p className="mb-2 px-1 text-[13px] font-medium text-muted">Categories</p>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => toggle("categories", c)}
-              className={`rounded-full border px-3 py-1.5 text-sm ${v.categories.includes(c) ? "border-ink bg-ink text-white" : "border-line bg-card"}`}
+              className={cn("rounded-full px-4 py-2 text-[15px] font-medium capitalize transition", v.categories.includes(c) ? "bg-ink text-white" : "bg-card shadow-sm")}
             >
               {c}
             </button>
           ))}
         </div>
-      </fieldset>
+      </div>
 
-      <NumberField label="Valid for (days)" value={v.days} onChange={(n) => setV({ ...v, days: n })} prefix="" />
-
-      <section className="rounded-2xl border border-line bg-card p-5 text-sm">
-        <p className="font-semibold">Shopping permissions for {childName}</p>
-        <ul className="mt-2 space-y-1 text-muted">
-          <li>Maximum automatic purchase: <span className="text-ink">{money(v.maxSingle)}</span></li>
-          <li>Daily limit: <span className="text-ink">{money(v.daily)}</span></li>
-          <li>Approved sellers: <span className="text-ink">{merchants.filter((m) => v.merchantIds.includes(m.id)).map((m) => m.display_name).join(", ") || "none"}</span></li>
-          <li>Categories: <span className="text-ink">{v.categories.join(", ") || "none"}</span></li>
-          <li>Expiry: <span className="text-ink">{expires}</span></li>
-          <li>Purchases outside these conditions: <span className="text-ink">ask parent</span></li>
+      <section className="rounded-3xl bg-card p-5 shadow-sm">
+        <p className="flex items-center gap-2 text-[17px] font-semibold">
+          <HugeiconsIcon icon={CheckListIcon} size={20} /> Rules for {childName}
+        </p>
+        <ul className="mt-3 space-y-1.5 text-[15px] text-muted">
+          <li>Can buy without asking, up to <b className="text-ink">{money(v.maxSingle)}</b> per item and <b className="text-ink">{money(v.daily)}</b> a day</li>
+          <li>From <b className="text-ink">{merchants.filter((m) => v.merchantIds.includes(m.id)).map((m) => m.display_name).join(", ") || "no sellers"}</b></li>
+          <li>In <b className="text-ink">{v.categories.join(", ") || "no categories"}</b></li>
+          <li>Until <b className="text-ink">{expires}</b></li>
+          <li>Everything else comes to you first</li>
         </ul>
       </section>
 
@@ -70,7 +73,7 @@ export function PermissionsForm({ childName, merchants, initial, hasPolicy }: { 
         Activate permissions
       </ActionButton>
       {hasPolicy && (
-        <ActionButton url="/api/policies" payload={{ action: "revoke" }} variant="danger" then="/parent" confirm="Revoke all automatic purchases?">
+        <ActionButton url="/api/policies" payload={{ action: "revoke" }} variant="danger" then="/parent" confirm="Turn off all automatic purchases?">
           Revoke permissions
         </ActionButton>
       )}
@@ -78,18 +81,37 @@ export function PermissionsForm({ childName, merchants, initial, hasPolicy }: { 
   );
 }
 
-function NumberField({ label, value, onChange, prefix = "₦" }: { label: string; value: number; onChange: (n: number) => void; prefix?: string }) {
+function Group({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium">{label}</span>
-      <span className="flex h-12 items-center rounded-xl border border-line bg-card px-4 focus-within:border-ink">
-        {prefix && <span className="text-muted">{prefix}</span>}
+    <div>
+      <p className="mb-2 px-1 text-[13px] font-medium text-muted">{title}</p>
+      <div className="divide-y divide-line rounded-3xl bg-card shadow-sm">{children}</div>
+      {note && <p className="mt-2 px-1 text-xs text-muted">{note}</p>}
+    </div>
+  );
+}
+
+function Switch({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
+  return (
+    <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={onClick} className={cn("relative h-7 w-12 rounded-full transition", on ? "bg-go" : "bg-fill")}>
+      <span className={cn("absolute top-0.5 left-0.5 size-6 rounded-full bg-white shadow transition", on && "translate-x-5")} />
+    </button>
+  );
+}
+
+function NumberField({ label, value, onChange, suffix }: { label: string; value: number; onChange: (n: number) => void; suffix?: string }) {
+  return (
+    <label className="flex items-center justify-between gap-4 px-4 py-2">
+      <span className="text-[15px]">{label}</span>
+      <span className="flex items-center gap-1 rounded-full bg-paper px-3 py-1.5">
+        {!suffix && <span className="text-muted">₦</span>}
         <input
           value={value}
           onChange={(e) => onChange(Number(e.target.value.replace(/[^\d]/g, "")) || 0)}
           inputMode="numeric"
-          className="tabular w-full bg-transparent pl-1 outline-none"
+          className="tabular w-20 bg-transparent text-right text-[15px] font-semibold outline-none"
         />
+        {suffix && <span className="text-muted">{suffix}</span>}
       </span>
     </label>
   );

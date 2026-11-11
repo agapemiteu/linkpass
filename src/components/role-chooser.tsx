@@ -1,14 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 
-const ROLES = [
-  { id: "guardian_001", label: "I'm a parent", sub: "Adaeze", to: "/parent" },
-  { id: "child_001", label: "I'm a child", sub: "Mira, 15", to: "/child" },
-];
+type Role = { id: string; label: string; sub: string; to: string; avatar: ReactNode };
 
-export function RoleChooser() {
+export function RoleChooser({ roles }: { roles: Role[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -19,16 +18,20 @@ export function RoleChooser() {
   }
 
   return (
-    <div className="grid gap-3">
-      {ROLES.map((r) => (
+    <div className="overflow-hidden rounded-3xl bg-card shadow-sm">
+      {roles.map((r, i) => (
         <button
           key={r.id}
           onClick={() => choose(r.id, r.to)}
           disabled={!!busy}
-          className="flex h-16 items-center justify-between rounded-2xl border border-line bg-card px-5 text-left transition hover:border-ink disabled:opacity-60"
+          className={`flex w-full items-center gap-4 px-5 py-4 text-left transition hover:bg-paper disabled:opacity-60 ${i > 0 ? "border-t border-line" : ""}`}
         >
-          <span className="font-semibold">{r.label}</span>
-          <span className="text-sm text-muted">{busy === r.id ? "Opening…" : r.sub}</span>
+          {r.avatar}
+          <span className="flex-1">
+            <span className="block text-[17px] font-semibold">{r.label}</span>
+            <span className="block text-sm text-muted">{busy === r.id ? "Opening…" : r.sub}</span>
+          </span>
+          <HugeiconsIcon icon={ArrowRight01Icon} size={20} className="text-muted" />
         </button>
       ))}
     </div>
