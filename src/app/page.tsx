@@ -68,7 +68,8 @@ export default function Welcome() {
   return (
     <main className="bg-white">
       {/* Opening */}
-      <section className="lg:grid lg:min-h-dvh lg:grid-cols-2">
+      <section className="relative overflow-hidden lg:grid lg:min-h-dvh lg:grid-cols-2">
+        <span aria-hidden className="pointer-events-none absolute -top-40 -right-40 size-[32rem] rounded-full bg-sun/25 blur-3xl" />
         <div className="relative h-[52dvh] overflow-hidden lg:h-auto">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/family.jpg" alt="A mother and daughter looking at a phone together" className="absolute inset-0 size-full object-cover" />
@@ -89,8 +90,7 @@ export default function Welcome() {
           </div>
         </div>
 
-        <div className="relative mx-auto flex max-w-md flex-col justify-center overflow-hidden px-5 py-10 lg:max-w-lg lg:px-12">
-          <span aria-hidden className="absolute -top-20 -right-20 size-60 rounded-full bg-sun/25 blur-3xl" />
+        <div className="relative mx-auto flex max-w-md flex-col justify-center px-5 py-10 lg:max-w-lg lg:px-12">
           <FadeUp className="relative">
             <h1 className="text-[2.5rem] leading-[1.03] font-semibold tracking-[-0.035em] lg:text-[3.4rem]">
               Safe spending <span className="bg-gradient-to-r from-blue to-lilac bg-clip-text text-transparent">for every child.</span>

@@ -7,6 +7,7 @@ import { Icon, TopBar } from "@/components/ui";
 import { Badge } from "@/components/ui/badge";
 import { Discover } from "@/components/discover";
 import { FadeUp } from "@/components/motion";
+import { Backdrop } from "@/components/backdrop";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +19,8 @@ export default async function ChildHome() {
   const used = balances.fundedKobo ? Math.round(((balances.spentKobo + balances.reservedKobo) / balances.fundedKobo) * 100) : 0;
 
   return (
-    <main className="relative mx-auto max-w-md overflow-hidden px-4 pb-16">
-      <div aria-hidden className="pointer-events-none absolute -top-24 -left-24 -z-10 size-72 rounded-full bg-sun/30 blur-3xl" />
-      <div aria-hidden className="pointer-events-none absolute top-40 -right-28 -z-10 size-72 rounded-full bg-lilac/25 blur-3xl" />
+    <main className="relative mx-auto max-w-md px-4 pb-16">
+      <Backdrop tone="sunny" />
       <TopBar name={user.displayName} role="child" />
 
       <FadeUp>

@@ -11,6 +11,7 @@ import { Icon, Reasons, TopBar } from "@/components/ui";
 import { JourneyPath } from "@/components/journey-path";
 import { Confetti } from "@/components/confetti";
 import { FadeUp } from "@/components/motion";
+import { Backdrop } from "@/components/backdrop";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -44,14 +45,6 @@ function headline(status: string, price: string, codes: ReasonCode[]) {
   }
 }
 
-// Background glow per outcome, so each moment has its own mood.
-const GLOW = {
-  go: "from-blue/30 via-lilac/25 to-mint/30",
-  ask: "from-sun/40 via-coral/20 to-lilac/25",
-  stop: "from-coral/35 via-stop/15 to-sun/20",
-  neutral: "from-lilac/25 via-blue/15 to-mint/20",
-};
-
 export default async function ChildPurchase({ params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser();
   if (user?.role !== "CHILD") redirect("/");
@@ -64,8 +57,8 @@ export default async function ChildPurchase({ params }: { params: Promise<{ id: 
   const steps = journey(p, "child");
 
   return (
-    <main className="relative mx-auto max-w-md overflow-hidden px-4 pb-16">
-      <div aria-hidden className={cn("pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px] bg-gradient-to-br blur-2xl", GLOW[tone])} />
+    <main className="relative mx-auto max-w-md px-4 pb-16">
+      <Backdrop tone={tone} />
       {justPaid && <Confetti />}
       <TopBar name={user.displayName} role="child" />
       <StatusPoller purchaseId={p.id} active={open} />
